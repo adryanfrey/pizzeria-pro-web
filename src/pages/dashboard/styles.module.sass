@@ -1,0 +1,66 @@
+.container
+    max-width: 720px
+    margin: 4rem auto
+    padding: 0 2rem
+    display: flex
+    flex-direction: column
+
+    .containerHeader
+        display: flex
+
+        h1
+        color: var(--white)
+        
+        button
+            background-color: transparent
+            border: none
+            margin-left: 1rem
+
+            svg
+                transition: scale .4s, transform 1s ease
+
+                &:hover
+                    scale: 1.2
+    
+    article
+        display: flex
+        flex-direction: column
+        margin: 1rem 0
+
+        section
+            display: flex
+            gap: 1rem
+            height: 60px
+            border-radius: .3rem
+            background-color: var(--dark-900)
+            align-items: center
+            cursor: pointer
+            margin-bottom: 1rem
+            transition: .4s
+            padding-right: 2rem
+
+            &:hover
+                transform: scale(1.05)
+
+            .tag
+                background-color: var(--red)
+                width: 8px
+                border-radius: .3rem 0 0 .3rem
+                height: 100%
+
+            span
+                color: var(--white)
+                font-size: 1.2rem
+
+            p
+                color: var(--white)
+                margin-left: auto
+                font-size: 1rem
+                display: flex
+                align-items: center
+                border-bottom: 1px solid rgba(255, 255, 255, 0.5)
+    
+.emptyList
+    font-size: 1.2rem
+    color: var(--white)
+    margin: 2rem auto

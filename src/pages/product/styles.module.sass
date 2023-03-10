@@ -1,0 +1,105 @@
+.container
+    max-width: 720px
+    margin: 4rem auto
+    padding: 0 2rem
+    display: flex
+    justify-content: space-between
+    flex-direction: column
+
+    h1
+        color: var(--white)
+
+
+    form
+        display: flex
+        flex-direction: column
+        margin: 1rem 0
+
+        label
+            width: 100%
+            height: 250px
+            background-color: var(--dark-900)
+            margin-bottom: 1rem     
+            border-radius: 0.3rem
+            display: flex
+            align-items: center
+            justify-content: center
+            cursor: pointer
+            position: relative
+
+            span
+                display: flex
+                text-align: center
+                line-height: 250px
+                opacity: 0.7
+                transition: .4s
+                display: inline-block
+                width: 100%
+                height: 100%
+                position: absolute
+
+                &:hover
+                    opacity: 1
+                    transform: scale(1.2)
+
+            input
+                display: none
+
+            img
+                width: 100%
+                height: 100%
+                object-fit: cover
+                border-radius: 0.3rem
+                
+
+
+        textarea
+            width: 100%
+            min-height: 120px
+            resize: none
+            padding: 0.5rem
+            background-color: var(--dark-900)
+            margin-bottom: 1rem
+            color: var(--white)
+            border-radius: 0.3rem
+
+        select
+            width: 100%
+            height: 40px
+            border-radius: 0.3rem
+            margin-bottom: 1rem
+            color: var(--white)
+            background-color: var(--dark-900)
+            border: 1px solid var(--gray-100)
+            padding: 0 0.5rem
+            cursor: pointer
+        
+        input
+            width: 100%
+            height: 40px
+            border-radius: 0.3rem
+            margin-bottom: 1rem
+            color: var(--white)
+            background-color: var(--dark-900)
+            border: 1px solid var(--gray-100)
+            padding: 0 0.5rem
+
+        button
+            width: 100%
+            height: 40px
+            border-radius: 0.3rem
+            margin-bottom: 1rem
+            color: var(--dark-700)
+            background-color: var(--green)
+            border: none
+            font-weight: bold
+            font-size: 1.2rem
+            transition: .4s
+
+            &:hover
+                filter: brightness(1.1)
+
+.noCategory
+    color: var(--red)
+    filter: brightness(1.6)
+    margin-bottom: 1rem

@@ -1,0 +1,41 @@
+.containerCenter
+    min-height: 100vh
+    display: flex
+    justify-content: center
+    align-items: center
+    flex-direction: column
+    background: var(--gray-900)
+
+    h1
+        font-size: 4rem 
+        color: var(--white)
+        span
+            color: var(--red)
+
+.login
+    margin-top: 2rem
+    width: 600px
+    display: flex
+    align-items: center
+    justify-content: center
+    flex-direction: column
+    padding: 2rem 1.5rem
+
+    form
+        display: flex
+        flex-direction: column
+        width: 90%
+
+        button
+            height: 40px
+            font-size: 1.2rem
+
+.link
+    color: var(--white)
+    margin-top: 1rem
+    cursor: pointer
+
+
+@media (max-width: 620px)
+    .login
+        width: 100%

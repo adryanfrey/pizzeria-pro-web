@@ -1,0 +1,42 @@
+.container
+    width: 620px
+    background-color: var(--dark-700)
+    color: var(--white)
+
+    h2
+        margin: 1rem 0
+        margin-bottom: 2.5rem
+
+    .table
+        font-size: 1.4rem
+
+    button
+        margin-top: 1.5rem
+        background-color: rgba(0,0,0, 40%)
+        border: none 
+        padding: 0.5rem 1rem
+        border-radius: 0.2rem
+        color: var(--red)
+        transition: .4s
+
+        &:hover
+            transform: scale(1.1)
+
+.containerItem
+    display: flex
+    margin: 1rem 0
+    gap: 1rem
+
+    strong
+        color: var(--green)
+
+@media (max-width: 750px) 
+    .container
+        width: 400px
+
+@media (max-width: 520px) 
+    .container
+        width: 290px
+
+
+

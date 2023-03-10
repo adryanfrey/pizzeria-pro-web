@@ -1,0 +1,44 @@
+.headerContainer
+    height: 5rem
+
+.headerContent
+    max-width: 1120px
+    height: 6rem
+    margin: 0 auto
+    display: flex
+    padding: 0 2rem
+    justify-content: space-between
+    align-items: center
+
+    h1
+        cursor: pointer
+        color: var(--white)
+        font-size: 2.7rem
+
+        span
+            color: var(--red)
+
+
+    nav
+        display: flex
+        align-items: center
+        justify-content: space-between
+        gap: 2rem
+
+        p
+            color: var(--white)
+            padding: 0 0.05rem
+            display: inline-block
+            position: relative
+            transition: .4s
+
+            &:hover
+                color: var(--red)
+        
+        button
+            background: transparent
+            border: none
+            transition: .5s
+
+            &:hover
+                transform: scale(1.2) 
