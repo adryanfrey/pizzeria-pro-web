@@ -12,8 +12,8 @@ import { Button } from '../components/ui/Button'
 import Link from 'next/link'
 import { useContext, FormEvent, useState } from 'react'
 import { GetServerSideProps } from 'next'
-import { api } from '@/services/apiClient'
-import { parseCookies } from 'nookies'
+import {LoadingPage} from '@/components/ui/LoadingPage/indext'
+
 
 // contexts
 import { AuthContext } from '../contexts/AuthContext'
@@ -23,6 +23,7 @@ export default function Home() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadingDemo, setLoadingDemo] = useState(false)
 
   const { signIn } = useContext(AuthContext)
 
@@ -38,7 +39,16 @@ export default function Home() {
   }
 
   const handleDemoSignIn = async () => {
+    setLoadingDemo(true)
     await signIn({email: '', password: '', demo: true})
+    setLoadingDemo(false)
+  }
+ 
+  if(loadingDemo) {
+    return (
+    <LoadingPage />
+  )
+  
   }
 
   return (
