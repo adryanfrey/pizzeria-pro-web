@@ -11,6 +11,7 @@ interface ModalCategoriesProps {
     isOpen: boolean
     onRequestClose: () => void
     categoryID: string
+    categoryName: string
     products: ProductsProps[]
 }
 
@@ -20,7 +21,7 @@ interface ProductsProps {
     price: string
 }
 
-export default function ModalCategories({ isOpen, onRequestClose, categoryID, products }: ModalCategoriesProps) {
+export default function ModalCategories({ isOpen, onRequestClose, categoryID, products, categoryName }: ModalCategoriesProps) {
     const customStyles = {
         overlay: {
             backgroundColor: 'rgba(0,0,0, 0.5)'
@@ -48,6 +49,7 @@ export default function ModalCategories({ isOpen, onRequestClose, categoryID, pr
     return (
         <Modal className={styles.modal} isOpen={isOpen} onRequestClose={onRequestClose} style={customStyles}>
             {products.length === 0 && <p className={styles.noProducts}>You havent add any product to this category yet...</p>}
+            <h1 className={styles.modalTitle}>{categoryName}</h1>
             {products?.map((product) => (
                 <div key={product.id} className={styles.productContainer}>
                     <form onSubmit={(e) => handleEditName(e, product.id)} className={styles.nameForm}>

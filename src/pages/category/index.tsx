@@ -11,9 +11,9 @@ import { toast } from 'react-toastify'
 import { GetServerSideProps } from 'next'
 import { canSSRAuth } from '@/utils/canSSRAuth'
 import { parseCookies } from 'nookies'
-import { BsFillTrashFill } from 'react-icons/bs'
 import Modal from 'react-modal'
 import { FaSpinner } from 'react-icons/fa'
+import { BiRightArrowAlt } from 'react-icons/bi'
 
 // html
 import Head from 'next/head'
@@ -44,6 +44,7 @@ export default function Category({ user_id, categories }: CategoryProps) {
 
     const [modalVisible, setModalVisible] = useState(false)
     const [modalItem, setModalItem] = useState('')
+    const [modalItem2, setModalItem2] = useState('')
     const [products, setProducts] = useState<ProductsProps[] | []>([])
     const [loading, setLoading] = useState(false)
 
@@ -75,7 +76,7 @@ export default function Category({ user_id, categories }: CategoryProps) {
 
     }
 
-    const handleModalView = async (categoryID: string) => {
+    const handleModalView = async (categoryID: string, categoryName: string) => {
         try {
             const response = await api.get('/product', {
                 params: {
@@ -87,6 +88,7 @@ export default function Category({ user_id, categories }: CategoryProps) {
             setProducts(response.data)
             setModalVisible(true)
             setModalItem(categoryID)
+            setModalItem2(categoryName)
         } catch (error) {
             alert('sorry there was an error')
         }
@@ -116,20 +118,17 @@ export default function Category({ user_id, categories }: CategoryProps) {
                 <h1>My categories</h1>
                 {myCategories?.map((category) => {
                     return (
-                        <div style={{ display: 'flex' }}>
-                            <div key={category.id} className={styles.categoriesContainer} onClick={() => handleModalView(category.id)}>
+                        <div key={category.id} style={{ display: 'flex' }}>
+                            <div key={category.id} className={styles.categoriesContainer} onClick={() => handleModalView(category.id, category.name)}>
                                 <div className={styles.tag}></div>
                                 <p>{category.name}</p>
-                                <span>See details</span>
+                                <span>See details <BiRightArrowAlt size={17} color='#fff'/></span>
                             </div>
-                            <button className={styles.button} onClick={() => toast.warn('Create an account to start using the app')}>
-                                <BsFillTrashFill className={styles.icon} size={25} color="#ff3f4b" />
-                            </button>
                         </div>
                     )
                 })}
             </section>
-            <ModalCategories products={products} categoryID={modalItem} isOpen={modalVisible} onRequestClose={() => setModalVisible(false)} />
+            <ModalCategories products={products} categoryID={modalItem} categoryName={modalItem2}isOpen={modalVisible} onRequestClose={() => setModalVisible(false)} />
         </>
     )
 }
@@ -144,6 +143,8 @@ export const getServerSideProps: GetServerSideProps = canSSRAuth(async (ctx) => 
             user_id: cookies['@userID']
         }
     })
+
+    console.log(response.data)
 
     return {
         props: {

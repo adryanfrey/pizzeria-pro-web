@@ -97,7 +97,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
                 Router.push('/dashboard')
 
-                toast.success('Welcome')
+                setTimeout(() => {
+                    toast.success('Welcome')
+                },500)
 
 
             } catch (error: any) {

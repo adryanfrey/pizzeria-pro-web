@@ -24,7 +24,11 @@ export function ModalOrder({ isOpen, onRequestClose, order, handleFinishOrder }:
             right: 'auto',
             padding: '30px',
             backgroundColor: '#1d1d2e',
-            transform: 'translate(-50%, -50%)'
+            transform: 'translate(-50%, -50%)',
+            border: 'none'
+        },
+        overlay: {
+            backgroundColor: 'rgba(0,0,0, 0.6)'
         }
     }
     return (
