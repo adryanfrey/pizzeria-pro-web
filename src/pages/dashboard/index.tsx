@@ -2,7 +2,7 @@
 import styles from './styles.module.sass'
 
 // hooks
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { parseCookies } from 'nookies'
 import { GetServerSideProps } from 'next'
 import { canSSRAuth } from '@/utils/canSSRAuth'
@@ -10,6 +10,7 @@ import { FiRefreshCcw } from 'react-icons/fi'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import Modal from 'react-modal'
 import { ModalOrder } from '@/components/ModalOrder'
+import { FaSpinner } from 'react-icons/fa'
 
 // api
 import { api } from '@/services/apiClient'
@@ -57,18 +58,42 @@ export type OrderItemProps = {
     }
 }
 
-export default function Dashboard({ ordersList, user_id }: ServerSideProps) {
-    const [orders, setOrders] = useState(ordersList || [])
+export default function Dashboard({ user_id }: ServerSideProps) {
+    const [orders, setOrders] = useState<OrderProps[]>()
     const [deg, setDeg] = useState(0)
     const [modalItem, setModalItem] = useState<OrderItemProps[]>()
     const [modalVisible, setModalVisible] = useState(false)
+    const [loading, setLoading] = useState(true)
+
+
+    // load orders first load
+    useEffect(() => {
+        async function getOrders() {
+            const api = setupApiClient({})
+
+            const response = await api.get('/order', {
+                params: {
+                    user_id: user_id
+                }
+            })
+
+            setOrders(response.data)
+            setLoading(false)
+        }
+
+        getOrders()
+    }, [])
+
+
 
     const handleCloseModal = () => {
         setModalVisible(false)
     }
 
     const handleModalView = async (orderId: string) => {
-        const response = await api.get('/order/detail',{
+        setLoading(true)
+        
+        const response = await api.get('/order/detail', {
             params: {
                 order_id: orderId
             }
@@ -76,9 +101,12 @@ export default function Dashboard({ ordersList, user_id }: ServerSideProps) {
 
         setModalItem(response.data)
         setModalVisible(true)
+        setLoading(false)
     }
 
     const refreshOrders = async () => {
+        setLoading(true)
+        setOrders([])
         // animation
         const icon = document.querySelector('.refresh-icon') as HTMLElement
 
@@ -92,6 +120,7 @@ export default function Dashboard({ ordersList, user_id }: ServerSideProps) {
         })
 
         setOrders(response.data)
+        setLoading(false)
     }
 
     const handleFinishOrder = async (id: string) => {
@@ -107,7 +136,7 @@ export default function Dashboard({ ordersList, user_id }: ServerSideProps) {
 
         toast.success('Order completed')
         setModalVisible(false)
-        setOrders(orders.filter((item) => item.id !== id))
+        setOrders(orders?.filter((item) => item.id !== id))
     }
 
     Modal.setAppElement('#__next')
@@ -122,15 +151,16 @@ export default function Dashboard({ ordersList, user_id }: ServerSideProps) {
                 <div className={styles.containerHeader}>
                     <h1>Last Orders</h1>
                     <button onClick={refreshOrders}>
-                        <FiRefreshCcw color='#3fffa3' size={25} className='refresh-icon'/>
+                        <FiRefreshCcw color='#3fffa3' size={25} className='refresh-icon' />
                     </button>
                 </div>
 
                 <article>
-                    {orders.length === 0 && (
-                        <span className={styles.emptyList}>No order at moment...</span>
+                    {loading && <FaSpinner className={styles.spinner} size={30} color='#ff3f4b'/>}
+                    {orders?.length === 0 && (
+                        <span className={styles.emptyList}>No order at the moment...</span>
                     )}
-                    {orders.map((order) => (
+                    {orders?.map((order) => (
                         <section key={order.id} onClick={() => handleModalView(order.id)}>
                             <div className={styles.tag}></div>
                             <span>Table {order.table}</span>
@@ -138,8 +168,8 @@ export default function Dashboard({ ordersList, user_id }: ServerSideProps) {
                         </section>
                     ))}
                 </article>
-                { modalVisible && 
-                    <ModalOrder isOpen={modalVisible} onRequestClose={handleCloseModal} order={modalItem} handleFinishOrder={handleFinishOrder}/>
+                {modalVisible &&
+                    <ModalOrder isOpen={modalVisible} onRequestClose={handleCloseModal} order={modalItem} handleFinishOrder={handleFinishOrder} />
                 }
             </main>
         </>
@@ -147,22 +177,10 @@ export default function Dashboard({ ordersList, user_id }: ServerSideProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = canSSRAuth(async (ctx) => {
-
-    const api = setupApiClient(ctx)
-
     let cookies = parseCookies(ctx)
-
-    console.log(cookies['@userID'])
-
-    const response = await api.get('/order', {
-        params: {
-            user_id: cookies['@userID']
-        }
-    })
 
     return {
         props: {
-            ordersList: response.data,
             user_id: cookies['@userID']
         }
     }

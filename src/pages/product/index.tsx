@@ -21,17 +21,37 @@ interface CategoryListProps {
     user_id: string
 }
 
-export default function Product({categoryList, user_id}: CategoryListProps ) {
+export default function Product({ user_id }: CategoryListProps) {
 
     const [productImg, setProductImg] = useState<File | string>('')
     const [previewImg, setPreviewImg] = useState('')
-    const [categories, setCategories] = useState(categoryList || [])
+    const [categories, setCategories] = useState<ItemProps[]>([{id: '', name: 'select a category'}])
     const [selectedCategory, setSelectedCategory] = useState(0)
     const [loading, setLoading] = useState(false)
 
     const [name, setName] = useState('')
     const [price, setPrice] = useState('')
     const [description, setDescription] = useState('')
+
+
+    // get Categories on first load
+    useEffect(() => {
+        async function getCategories() {
+            const api = setupApiClient({})
+
+            const response = await api.get('category', {
+                params: {
+                    user_id: user_id
+                }
+            })
+
+            setCategories(response.data)
+        }
+
+        getCategories()
+    }, [])
+
+
 
     const handleFile = (e: ChangeEvent<HTMLInputElement>) => {
 
@@ -58,7 +78,7 @@ export default function Product({categoryList, user_id}: CategoryListProps ) {
         }
 
         if (!productImg) return toast.warn('Select an Image')
- 
+
         try {
             setLoading(true)
             const data = {
@@ -67,7 +87,7 @@ export default function Product({categoryList, user_id}: CategoryListProps ) {
                 description,
                 categoryId: categories[selectedCategory].id
             }
-      
+
             await api.post('/product', data)
 
             setLoading(false)
@@ -109,22 +129,22 @@ export default function Product({categoryList, user_id}: CategoryListProps ) {
                     </label>
 
                     <select value={selectedCategory} required onChange={(e) => setSelectedCategory(parseInt(e.target.value))}>
-                        {categories.map((category, index) => (
+                        {categories?.map((category, index) => (
                             <option key={category.id} value={index}>
                                 {category.name}
                             </option>
                         ))}
                     </select>
 
-                    {categories.length === 0 && (
+                    {categories?.length === 0 && (
                         <p className={styles.noCategory}>In order to add a new product you should first create its category. Go to the categories session to create a new category.</p>
-                    )} 
+                    )}
 
-                    <input type="text" placeholder='Product name' value={name} onChange={(e) => setName(e.target.value)} required/>
+                    <input type="text" placeholder='Product name' value={name} onChange={(e) => setName(e.target.value)} required />
 
-                    <input type="text" placeholder='Product Price' value={price} onChange={(e) => setPrice(e.target.value)}  required/>
+                    <input type="text" placeholder='Product Price' value={price} onChange={(e) => setPrice(e.target.value)} required />
 
-                    <textarea placeholder='Description' value={description} onChange={(e) => setDescription(e.target.value)} required/>
+                    <textarea placeholder='Description' value={description} onChange={(e) => setDescription(e.target.value)} required />
 
                     <button disabled={loading}>Create Product</button>
                 </form>
@@ -134,20 +154,10 @@ export default function Product({categoryList, user_id}: CategoryListProps ) {
 }
 
 export const getServerSideProps = canSSRAuth(async (ctx) => {
-
-        const api = setupApiClient(ctx)
-
-        let cookies = parseCookies(ctx)
-
-        const response = await api.get('category', {
-            params: {
-                user_id: cookies['@userID']
-            }
-        })
+    let cookies = parseCookies(ctx)
 
     return {
         props: {
-            categoryList: response.data,
             user_id: cookies['@userID']
         }
     }

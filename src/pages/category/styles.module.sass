@@ -37,15 +37,6 @@
             &:hover
                 filter: brightness(1.2)
 
-            .spinner
-                animation: spin linear 2s infinite
-
-            @keyframes spin
-                0%  
-                    transform: rotate(0deg)
-                100%
-                    transform: rotate(360deg)
-
 .myCategories
     max-width: 720px
     margin: 0 auto
@@ -73,8 +64,7 @@
         border-radius: .3rem
 
         &:hover
-                transform: scale(1.05)
-        
+            transform: scale(1.05)
 
         .tag
             background-color: var(--green)
@@ -101,5 +91,13 @@
 
         &:hover
             background-color: #fff
-            
 
+.spinner
+    animation: spin linear 2s infinite
+    margin: 0 auto
+
+    @keyframes spin
+        0%
+            transform: rotate(0deg)
+        100%
+            transform: rotate(360deg)

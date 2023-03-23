@@ -6,7 +6,7 @@ import Header from '@/components/Header'
 import ModalCategories from '@/components/ModalCategories'
 
 // hooks
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { GetServerSideProps } from 'next'
 import { canSSRAuth } from '@/utils/canSSRAuth'
@@ -38,15 +38,35 @@ interface ProductsProps {
     price: string
 }
 
-export default function Category({ user_id, categories }: CategoryProps) {
+export default function Category({ user_id }: CategoryProps) {
     const [category, setCategory] = useState('')
-    const [myCategories, setMyCategories] = useState(categories)
+    const [myCategories, setMyCategories] = useState<MyCategoriesProps[]>()
 
     const [modalVisible, setModalVisible] = useState(false)
     const [modalItem, setModalItem] = useState('')
     const [modalItem2, setModalItem2] = useState('')
     const [products, setProducts] = useState<ProductsProps[] | []>([])
     const [loading, setLoading] = useState(false)
+    const [firstLoading, setFirstLoading] = useState(true)
+
+    // load categories first load
+    useEffect(() => {
+        async function getCategories() {
+            const api = setupApiClient({})
+
+            const response = await api.get('/category', {
+                params: {
+                    user_id: user_id
+                }
+            })
+
+            setMyCategories(response.data)
+            setFirstLoading(false)
+        }
+
+        getCategories()
+    }, [])
+
 
     const createCategory = async (e: FormEvent) => {
         e.preventDefault()
@@ -64,7 +84,6 @@ export default function Category({ user_id, categories }: CategoryProps) {
             setLoading(false)
             toast.success('Category created succesfully')
             setCategory('')
-            setMyCategories([...categories, { id: response.data.id, name: category }])
         } catch (error: any) {
             const message = JSON.stringify(error.request.responseText)
             if (message.includes('Category Already')) {
@@ -108,7 +127,7 @@ export default function Category({ user_id, categories }: CategoryProps) {
                     <input type="text" placeholder='Category Name' value={category} onChange={(e) => setCategory(e.target.value)} required />
                     <button disabled={loading} type='submit'>
                         {loading ? (
-                            <FaSpinner className='spinner' color='#fff' size={20}/>
+                            <FaSpinner className={styles.spinner} color='#fff' size={20} />
                         ) : 'Create'}
                     </button>
                 </form>
@@ -116,19 +135,20 @@ export default function Category({ user_id, categories }: CategoryProps) {
             </main>
             <section className={styles.myCategories}>
                 <h1>My categories</h1>
+                {firstLoading && <FaSpinner className={styles.spinner} size={30} color='#ff3f4b'/>}
                 {myCategories?.map((category) => {
                     return (
                         <div key={category.id} style={{ display: 'flex' }}>
                             <div key={category.id} className={styles.categoriesContainer} onClick={() => handleModalView(category.id, category.name)}>
                                 <div className={styles.tag}></div>
                                 <p>{category.name}</p>
-                                <span>See details <BiRightArrowAlt size={17} color='#fff'/></span>
+                                <span>See details <BiRightArrowAlt size={17} color='#fff' /></span>
                             </div>
                         </div>
                     )
                 })}
             </section>
-            <ModalCategories products={products} categoryID={modalItem} categoryName={modalItem2}isOpen={modalVisible} onRequestClose={() => setModalVisible(false)} />
+            <ModalCategories products={products} categoryID={modalItem} categoryName={modalItem2} isOpen={modalVisible} onRequestClose={() => setModalVisible(false)} />
         </>
     )
 }
@@ -136,20 +156,9 @@ export default function Category({ user_id, categories }: CategoryProps) {
 export const getServerSideProps: GetServerSideProps = canSSRAuth(async (ctx) => {
     let cookies = parseCookies(ctx)
 
-    const api = setupApiClient(ctx)
-
-    const response = await api.get('/category', {
-        params: {
-            user_id: cookies['@userID']
-        }
-    })
-
-    console.log(response.data)
-
     return {
         props: {
             user_id: cookies["@userID"],
-            categories: response.data
         }
     }
 })
