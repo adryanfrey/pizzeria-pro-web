@@ -42,7 +42,7 @@ export function signOut() {
 
 export function AuthProvider({ children }: AuthProviderProps) {
 
-    const [user, setUser] = useState({} as UserProps)
+    const [user, setUser] = useState<UserProps>()
 
     // check token && get user data on reload
     useEffect(() => {
