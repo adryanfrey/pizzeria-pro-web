@@ -2,26 +2,23 @@
 import styles from './styles.module.sass'
 
 // hooks
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useContext } from 'react'
+import { AuthContext } from '@/contexts/AuthContext'
 import { parseCookies } from 'nookies'
-import { GetServerSideProps } from 'next'
-import { canSSRAuth } from '@/utils/canSSRAuth'
+import { GetServerSidePropsContext } from 'next'
 import { FiRefreshCcw } from 'react-icons/fi'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import Modal from 'react-modal'
 import { ModalOrder } from '@/components/ModalOrder'
 import { FaSpinner } from 'react-icons/fa'
+import { toast } from 'react-toastify'
+import Head from 'next/head'
 
 // api
 import { api } from '@/services/apiClient'
 
-// html
-import Head from 'next/head'
-
 // components
-import Header from '@/components/Header'
-import { setupApiClient } from '@/services/api'
-import { toast } from 'react-toastify'
+import Navbar from '@/components/Navbar'
 
 type OrderProps = {
     id: string
@@ -31,11 +28,6 @@ type OrderProps = {
     name?: string
     created_at: string
     updated_at: string
-}
-
-interface ServerSideProps {
-    ordersList: OrderProps[]
-    user_id: string
 }
 
 export type OrderItemProps = {
@@ -58,25 +50,23 @@ export type OrderItemProps = {
     }
 }
 
-export default function Dashboard({ user_id }: ServerSideProps) {
+export default function Dashboard() {
     const [orders, setOrders] = useState<OrderProps[]>()
     const [deg, setDeg] = useState(0)
     const [modalItem, setModalItem] = useState<OrderItemProps[]>()
     const [modalVisible, setModalVisible] = useState(false)
     const [loading, setLoading] = useState(true)
 
+    const {user} = useContext(AuthContext)
 
-    // load orders first load
+    // load orders on first load
     useEffect(() => {
         async function getOrders() {
-            const api = setupApiClient({})
-
             const response = await api.get('/order', {
                 params: {
-                    user_id: user_id
+                    user_id: user.id
                 }
             })
-
             setOrders(response.data)
             setLoading(false)
         }
@@ -115,7 +105,7 @@ export default function Dashboard({ user_id }: ServerSideProps) {
 
         const response = await api.get('/order', {
             params: {
-                user_id: user_id
+                user_id: user.id
             }
         })
 
@@ -125,7 +115,7 @@ export default function Dashboard({ user_id }: ServerSideProps) {
 
     const handleFinishOrder = async (id: string) => {
 
-        if (user_id === 'adda52bb-4f3e-4005-910e-a5b323a66094') {
+        if (user.id === 'adda52bb-4f3e-4005-910e-a5b323a66094') {
 
             return toast.warn('Create an account to start using the app')
         }
@@ -146,7 +136,7 @@ export default function Dashboard({ user_id }: ServerSideProps) {
             <Head>
                 <title>Dashboard - Pizzeria</title>
             </Head>
-            <Header />
+            <Navbar />
             <main className={styles.container}>
                 <div className={styles.containerHeader}>
                     <h1>Last Orders</h1>
@@ -157,7 +147,7 @@ export default function Dashboard({ user_id }: ServerSideProps) {
 
                 <article>
                     {loading && <FaSpinner className={styles.spinner} size={30} color='#ff3f4b'/>}
-                    {orders?.length === 0 && (
+                    {orders?.length === 0 && !loading && (
                         <span className={styles.emptyList}>No order at the moment...</span>
                     )}
                     {orders?.map((order) => (
@@ -176,12 +166,23 @@ export default function Dashboard({ user_id }: ServerSideProps) {
     )
 }
 
-export const getServerSideProps: GetServerSideProps = canSSRAuth(async (ctx) => {
-    let cookies = parseCookies(ctx)
+
+// check user Authentication 
+export const getServerSideProps = (ctx: GetServerSidePropsContext) => {
+    const cookies = parseCookies(ctx)
+
+    if (!cookies['@pizzeriaProToken']) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false
+            }
+        }
+    }
 
     return {
         props: {
-            user_id: cookies['@userID']
+
         }
     }
-})
+} 

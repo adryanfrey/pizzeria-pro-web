@@ -2,12 +2,10 @@ import { createContext, ReactNode, useState, useEffect } from "react";
 import { destroyCookie, setCookie, parseCookies } from "nookies";
 import Router from "next/router";
 import { toast } from 'react-toastify'
-
 import { api } from "@/services/apiClient";
 
 type AuthContextData = {
     user: UserProps
-    isAuthenticated: boolean
     signIn: (credentials: SignInProps) => Promise<void>
     signOut: () => void
     signUp: (credentials: signUpProps) => void
@@ -38,37 +36,35 @@ type signUpProps = {
 export const AuthContext = createContext({} as AuthContextData)
 
 export function signOut() {
-    try {
-        destroyCookie(undefined, '@nextauth.token')
-        destroyCookie(undefined, '@userID')
-        Router.push('/')
-    } catch (error) {
-
-    }
+    destroyCookie(undefined, '@pizzeriaProToken')
+    Router.push('/')
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
 
-    const [user, setUser] = useState<UserProps>({ id: '', name: '', email: '' })
-    const isAuthenticated = !!user.id
+    const [user, setUser] = useState({} as UserProps)
 
+    // check token && get user data on reload
     useEffect(() => {
-        api.get('/me').then((response) => {
-            const { name, email, id } = response.data
+        const cookies = parseCookies()
 
-            setUser({ id, name, email })
-        })
+        if (cookies['@pizzeriaProToken']) {
+
+            api.get('/me').then(response => {
+                const {id, name, email} = response.data
+                setUser({id, name, email})
+
+            })
             .catch(() => {
                 signOut()
             })
-    }, [])
+
+        }
+    },[])
 
     async function signIn({ email, password, demo = false }: SignInProps) {
-
-
         // login user for demo account
-
-        if (demo === true) {
+        if (demo) {
             try {
                 const response = await api.post('/session', {
                     email: 'pizzeriaPro@demo',
@@ -77,14 +73,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
                 const { id, name, token } = response.data
 
-                setCookie(undefined, '@nextauth.token', token, {
+                setCookie(undefined, '@pizzeriaProToken', token, {
                     maxAge: 60 * 60 * 24 * 30,  // expira em 1 mes
                     path: '/'   // quais caminhos terao acesso ao cookie. '/' significa todos
-                })
-
-                setCookie(undefined, '@userID', id, {
-                    maxAge: 60 * 60 * 24 * 30,
-                    path: '/'
                 })
 
                 setUser({
@@ -94,13 +85,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 })
 
                 api.defaults.headers['Authorization'] = `Bearer ${token}`
-
                 Router.push('/dashboard')
-
-                setTimeout(() => {
-                    toast.success('Welcome')
-                },500)
-
 
             } catch (error: any) {
                 console.log(error)
@@ -130,14 +115,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
             const { id, name, token } = response.data
 
-            setCookie(undefined, '@nextauth.token', token, {
+            setCookie(undefined, '@pizzeriaProToken', token, {
                 maxAge: 60 * 60 * 24 * 30,  // expira em 1 mes
                 path: '/'   // quais caminhos terao acesso ao cookie. '/' significa todos
-            })
-
-            setCookie(undefined, '@userID', id, {
-                maxAge: 60 * 60 * 24 * 30,
-                path: '/'
             })
 
             setUser({
@@ -147,9 +127,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             })
 
             api.defaults.headers['Authorization'] = `Bearer ${token}`
-
-            toast.success('Welcome')
-
             Router.push('/dashboard')
 
         } catch (error: any) {
@@ -178,20 +155,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
             })
 
             toast.success('Account created succesfully')
-
             Router.push('/')
+
         } catch (error: any) {
             console.log(error)
             const message = JSON.stringify(error.request.responseText)
             if (message.includes('Email already')) {
                 return toast.warn('Email already registered')
-            }
+            } 
             toast.error('There was an error, try again later')
         }
     }
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated, signIn, signOut, signUp }}>
+        <AuthContext.Provider value={{ user, signIn, signOut, signUp }}>
             {children}
         </AuthContext.Provider>
     )

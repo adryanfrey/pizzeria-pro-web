@@ -1,5 +1,4 @@
 import Head from 'next/head'
-import Image from 'next/image'
 
 // sass
 import styles from './styles.module.sass'
@@ -13,9 +12,12 @@ import Link from 'next/link'
 import {useContext, FormEvent, useState } from 'react'
 import { AuthContext } from '@/contexts/AuthContext'
 import { toast } from 'react-toastify'
-import { GetServerSideProps } from 'next'
+import { GetServerSidePropsContext } from 'next'
+import { parseCookies } from 'nookies'
 
 export default function SignUp() {
+
+  // states
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -36,7 +38,6 @@ export default function SignUp() {
     if(password.length < 6) {
       return toast.warn('Password should have at least 6 characters')
     }
-
 
     setLoading(true)
 
@@ -74,3 +75,23 @@ export default function SignUp() {
     </>
   )
 }
+
+// check user Authentication 
+export const getServerSideProps = (ctx: GetServerSidePropsContext) => {
+  const cookies = parseCookies(ctx)
+
+  if (cookies['@pizzeriaProToken']) {
+      return {
+          redirect: {
+              destination: '/dashboard',
+              permanent: false
+          }
+      }
+  }
+
+  return {
+      props: {
+
+      }
+  }
+} 

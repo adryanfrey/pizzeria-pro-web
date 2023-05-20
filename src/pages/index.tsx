@@ -11,9 +11,9 @@ import { Button } from '../components/ui/Button'
 // hooks
 import Link from 'next/link'
 import { useContext, FormEvent, useState } from 'react'
-import { GetServerSideProps } from 'next'
-import {LoadingPage} from '@/components/ui/LoadingPage/indext'
-
+import { GetServerSidePropsContext } from 'next'
+import { LoadingPage } from '@/components/ui/LoadingPage/indext'
+import { parseCookies } from 'nookies'
 
 // contexts
 import { AuthContext } from '../contexts/AuthContext'
@@ -32,23 +32,20 @@ export default function Home() {
     let data = { email, password }
 
     setLoading(true)
-
     await signIn(data)
-
     setLoading(false)
   }
 
   const handleDemoSignIn = async () => {
     setLoadingDemo(true)
-    await signIn({email: '', password: '', demo: true})
+    await signIn({ email: '', password: '', demo: true })
     setLoadingDemo(false)
   }
- 
-  if(loadingDemo) {
+
+  if (loadingDemo) {
     return (
-    <LoadingPage />
-  )
-  
+      <LoadingPage />
+    )
   }
 
   return (
@@ -62,8 +59,8 @@ export default function Home() {
 
         <div className={styles.login}>
           <form onSubmit={(e) => handleLogin(e)}>
-            <Input placeholder='Enter your email' type='text'  required value={email} onChange={(e) => setEmail(e.target.value)}/>
-            <Input placeholder='Your Password' type='password' required value={password} onChange={(e) => setPassword(e.target.value)}/>
+            <Input placeholder='Enter your email' type='text' required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input placeholder='Your Password' type='password' required value={password} onChange={(e) => setPassword(e.target.value)} />
             <Button type='submit' loading={loading}>
               Login
             </Button>
@@ -82,11 +79,23 @@ export default function Home() {
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
- 
-  return{
-    props: {
-      
-    }
+
+// check user Authentication 
+export const getServerSideProps = (ctx: GetServerSidePropsContext) => {
+  const cookies = parseCookies(ctx)
+
+  if (cookies['@pizzeriaProToken']) {
+      return {
+          redirect: {
+              destination: '/dashboard',
+              permanent: false
+          }
+      }
   }
-}
+
+  return {
+      props: {
+
+      }
+  }
+} 

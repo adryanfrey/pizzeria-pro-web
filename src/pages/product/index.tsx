@@ -1,47 +1,39 @@
-import { canSSRAuth } from '@/utils/canSSRAuth'
 import Head from 'next/head'
 import styles from './styles.module.sass'
-import Header from '@/components/Header'
-import { ChangeEvent, useState, useEffect, FormEvent } from 'react'
+import Navbar from '@/components/Navbar'
+import { ChangeEvent, useState, useEffect, FormEvent, useContext } from 'react'
+import { AuthContext } from '@/contexts/AuthContext'
 import { api } from '@/services/apiClient'
 import { toast } from 'react-toastify'
-
 import { FiUpload } from 'react-icons/fi'
-
-import { setupApiClient } from '@/services/api'
 import { parseCookies } from 'nookies'
+import { GetServerSidePropsContext } from 'next'
 
 type ItemProps = {
     id: string
     name: string
 }
 
-interface CategoryListProps {
-    categoryList: ItemProps[],
-    user_id: string
-}
 
-export default function Product({ user_id }: CategoryListProps) {
-
+export default function Product() {
+    // states
     const [productImg, setProductImg] = useState<File | string>('')
     const [previewImg, setPreviewImg] = useState('')
     const [categories, setCategories] = useState<ItemProps[]>([{id: '', name: 'select a category'}])
     const [selectedCategory, setSelectedCategory] = useState(0)
     const [loading, setLoading] = useState(false)
-
     const [name, setName] = useState('')
     const [price, setPrice] = useState('')
     const [description, setDescription] = useState('')
 
+    const { user } = useContext(AuthContext)
 
     // get Categories on first load
     useEffect(() => {
         async function getCategories() {
-            const api = setupApiClient({})
-
             const response = await api.get('category', {
                 params: {
-                    user_id: user_id
+                    user_id: user.id
                 }
             })
 
@@ -50,8 +42,6 @@ export default function Product({ user_id }: CategoryListProps) {
 
         getCategories()
     }, [])
-
-
 
     const handleFile = (e: ChangeEvent<HTMLInputElement>) => {
 
@@ -73,7 +63,7 @@ export default function Product({ user_id }: CategoryListProps) {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
 
-        if (user_id === 'adda52bb-4f3e-4005-910e-a5b323a66094') {
+        if (user.id === 'adda52bb-4f3e-4005-910e-a5b323a66094') {
             return toast.warn('Create an account to start using the app')
         }
 
@@ -110,7 +100,7 @@ export default function Product({ user_id }: CategoryListProps) {
             <Head>
                 <title>Menu - Pizzeria Pro</title>
             </Head>
-            <Header />
+            <Navbar />
             <main className={styles.container}>
                 <h1>New Product</h1>
 
@@ -153,12 +143,22 @@ export default function Product({ user_id }: CategoryListProps) {
     )
 }
 
-export const getServerSideProps = canSSRAuth(async (ctx) => {
-    let cookies = parseCookies(ctx)
+// check user Authentication 
+export const getServerSideProps = (ctx: GetServerSidePropsContext) => {
+    const cookies = parseCookies(ctx)
+
+    if (!cookies['@pizzeriaProToken']) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false
+            }
+        }
+    }
 
     return {
         props: {
-            user_id: cookies['@userID']
+
         }
     }
-})
+} 

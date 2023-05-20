@@ -1,9 +1,7 @@
 import styles from './styles.module.sass'
-
 import { InputHTMLAttributes, TextareaHTMLAttributes } from 'react'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement>{}
-
 interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement>{}
 
 export function Input({...rest}: InputProps){

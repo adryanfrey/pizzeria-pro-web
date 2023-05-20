@@ -2,14 +2,14 @@
 import styles from './styles.module.sass'
 
 // components
-import Header from '@/components/Header'
+import Navbar from '@/components/Navbar'
 import ModalCategories from '@/components/ModalCategories'
 
 // hooks
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useEffect, useState, useContext } from 'react'
+import { AuthContext } from '@/contexts/AuthContext'
 import { toast } from 'react-toastify'
-import { GetServerSideProps } from 'next'
-import { canSSRAuth } from '@/utils/canSSRAuth'
+import { GetServerSidePropsContext } from 'next'
 import { parseCookies } from 'nookies'
 import Modal from 'react-modal'
 import { FaSpinner } from 'react-icons/fa'
@@ -20,16 +20,10 @@ import Head from 'next/head'
 
 // api 
 import { api } from '@/services/apiClient'
-import { setupApiClient } from '@/services/api'
 
 interface MyCategoriesProps {
     id: string,
     name: string
-}
-
-interface CategoryProps {
-    user_id: string,
-    categories: MyCategoriesProps[]
 }
 
 interface ProductsProps {
@@ -38,7 +32,7 @@ interface ProductsProps {
     price: string
 }
 
-export default function Category({ user_id }: CategoryProps) {
+export default function Category() {
     const [category, setCategory] = useState('')
     const [myCategories, setMyCategories] = useState<MyCategoriesProps[]>()
 
@@ -49,14 +43,14 @@ export default function Category({ user_id }: CategoryProps) {
     const [loading, setLoading] = useState(false)
     const [firstLoading, setFirstLoading] = useState(true)
 
+    const { user } = useContext(AuthContext)
+
     // load categories first load
     useEffect(() => {
         async function getCategories() {
-            const api = setupApiClient({})
-
             const response = await api.get('/category', {
                 params: {
-                    user_id: user_id
+                    user_id: user.id
                 }
             })
 
@@ -71,7 +65,7 @@ export default function Category({ user_id }: CategoryProps) {
     const createCategory = async (e: FormEvent) => {
         e.preventDefault()
 
-        if (user_id === 'adda52bb-4f3e-4005-910e-a5b323a66094') {
+        if (user.id === 'adda52bb-4f3e-4005-910e-a5b323a66094') {
             return toast.warn('Create an account to start using the app')
         }
 
@@ -79,7 +73,7 @@ export default function Category({ user_id }: CategoryProps) {
             setLoading(true)
             const response = await api.post('/category', {
                 name: category,
-                user_id
+                user_id: user.id
             })
             setLoading(false)
             toast.success('Category created succesfully')
@@ -120,7 +114,7 @@ export default function Category({ user_id }: CategoryProps) {
             <Head>
                 <title>New Category - Pizzeria Pro</title>
             </Head>
-            <Header />
+            <Navbar />
             <main className={styles.container}>
                 <h1>Create Categories</h1>
                 <form onSubmit={(e) => createCategory(e)}>
@@ -153,12 +147,22 @@ export default function Category({ user_id }: CategoryProps) {
     )
 }
 
-export const getServerSideProps: GetServerSideProps = canSSRAuth(async (ctx) => {
-    let cookies = parseCookies(ctx)
+// check user Authentication 
+export const getServerSideProps = (ctx: GetServerSidePropsContext) => {
+    const cookies = parseCookies(ctx)
+
+    if (!cookies['@pizzeriaProToken']) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false
+            }
+        }
+    }
 
     return {
         props: {
-            user_id: cookies["@userID"],
+
         }
     }
-})
+} 
